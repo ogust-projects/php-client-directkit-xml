@@ -2,8 +2,8 @@
   "name": "lemonway-ogust/php-sdk",
   "description": "PHP SDK for Lemon Way API",
   "type": "library",
+  "keywords": ["ogust"],
   "homepage": "https://github.com/ogust-projects/php-client-directkit-xml",
-  "minimum-stability": "stable",
   "license": "MIT",
   "require": {
     "php": ">=5.4.0",
