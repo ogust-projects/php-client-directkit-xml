@@ -11,11 +11,13 @@ class LemonWayAPI
      */
     public $config;
 
+    protected $proxy;
+
     /**
      * Used for Debug mode
      * @var boolean
      */
-    private $printInputAndOutputXml = false;
+    protected $printInputAndOutputXml = false;
 
     /**
      * LemonWayKit constructor.
@@ -30,6 +32,12 @@ class LemonWayAPI
         $this->config->wlPass = $password;
         $this->config->lang = $lang;
         $this->config->isDebugEnabled = $debug;
+    }
+
+    public function setProxy($host, $port = null, $userPwd = null){
+        $this->proxy = ['host' => $host];
+        if($port){ $this->proxy['port'] = $port; }
+        if($userPwd){ $this->proxy['userPwd'] = $userPwd; }
     }
 
     /**
@@ -763,7 +771,7 @@ class LemonWayAPI
      *
      * @param string    $res
      */
-    private function printDirectkitOutput($res)
+    protected function printDirectkitOutput($res)
     {
         if ($this->config->isDebugEnabled) {
             print '<br/>DEBUG OUTPUT START<br/>';
@@ -794,7 +802,7 @@ class LemonWayAPI
      *
      * @param string    $string
      */
-    private function printDirectkitInput($string)
+    protected function printDirectkitInput($string)
     {
         if ($this->config->isDebugEnabled) {
             print '<br/>DEBUG INTPUT START<br/>';
@@ -813,7 +821,7 @@ class LemonWayAPI
      *
      * @return ApiResponse
      */
-    private function sendRequest($methodName, $params, $version)
+    protected function sendRequest($methodName, $params, $version)
     {
         $xmlns = 'Service_mb_xml';
         
@@ -867,6 +875,17 @@ class LemonWayAPI
         curl_setopt($ch, CURLOPT_POSTFIELDS, $xml_soap);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config->sslVerification);
+
+        if(isset($this->proxy) && is_array($this->proxy) && !empty($this->proxy['host'])){
+            curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, true);
+            curl_setopt($ch, CURLOPT_PROXY, $this->proxy['host']);
+            if(!empty($this->proxy['port'])){
+                curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy['port']);
+            }
+            if(!empty($this->proxy['userPwd'])){
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD,  $this->proxy['userPwd']);
+            }
+        }
 
         $response = curl_exec($ch);
 
@@ -942,6 +961,17 @@ class LemonWayAPI
         curl_setopt($ch, CURLOPT_URL, $this->config->wkUrl . "?moneyintoken=" . $moneyInToken . '&p=' . urlencode($cssUrl) . '&lang=' . $language);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config->sslVerification);
+
+        if(isset($this->proxy) && is_array($this->proxy) && !empty($this->proxy['host'])){
+            curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, true);
+            curl_setopt($ch, CURLOPT_PROXY, $this->proxy['host']);
+            if(!empty($this->proxy['port'])){
+                curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy['port']);
+            }
+            if(!empty($this->proxy['userPwd'])){
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD,  $this->proxy['userPwd']);
+            }
+        }
         
         $server_output = curl_exec($ch);
         if (curl_errno($ch)) {
@@ -964,7 +994,7 @@ class LemonWayAPI
         }
     }
 
-    private function cleanRequest($str)
+    protected function cleanRequest($str)
     {
         $str = str_replace('&', htmlentities('&'), $str);
         $str = str_replace('<', htmlentities('<'), $str);
